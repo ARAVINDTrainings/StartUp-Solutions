@@ -4,7 +4,8 @@ public class QuotientRemainder {
 
   public static void main(String[] args) {
 
-    int dividend = 25, divisor = 4;
+    int dividend = 50, divisor = 40;
+# these changes are particular to Facebook login
 
     int quotient = dividend / divisor;
     int remainder = dividend % divisor;
