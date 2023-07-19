@@ -1,0 +1,172 @@
+Aravind
+Ansible Installation process in Master
+===================================================
+yum install epel-release -y
+yum install ansible -y
+ansible --version
+cd /etc/ansible (we can see hosts file)
+ansible --list-hosts all
+vi /etc/ansible/hosts   (Add the servers in Inventory/hosts file)
+[redhat]
+172.31.85.233
+
+[debian]
+172.31.94.133
+
+ansible -m ping redhat
+ansible -m ping all
+
+<node_name> ansible_host=<pvt_ip> ansible_user =<username>  ansible_ssh_private_key_file = <*.pem>
+
+n1 ansible_host=172.31.81.39 ansible_user=ec2-user ansible_ssh_private_key_file=/root/Ansible.pem
+n2 ansible_host=172.31.93.28 ansible_user=ec2-user ansible_ssh_private_key_file=/root/Ansible.pem
+
+
+adhoc commands
+----------------------------------
+ansible -m command -a "ls" all –b
+ansible -m yum  -a "pkg=git state=present/absent/latest" -b all 
+ansible -m service -a "name=httpd state=started" -b all
+ansible -m user -a "name=Chris state=present" -b all
+
+playbooks
+-------------------------------
+vi /etc/ansible/ansible.cfg
+interpreter_python=auto_silent
+command_warnings=False
+
+---
+- hosts: all
+  become: true
+  tasks:
+  - user: name=John
+
+---
+- name: Installing package
+  hosts: all
+  become: true
+  tasks:
+  - name: Installing git package
+    yum:
+      name: git
+      state: installed
+
+---
+- name: Creating a file
+  hosts: all
+  become: true
+  tasks:
+  - name: Creating a file
+    file:
+      path: /home/ec2-user/testfile
+      state: touch
+
+---
+- name: Copying a file
+  hosts: all
+  become: true
+  tasks:
+  - name: Copying a file
+    copy:
+      src: /home/ec2-user/index.html
+      dest: /home/ec2-user/
+
+---
+- name: Installing httpd
+  hosts: all
+  become: true
+  tasks:
+  - name: Installing httpd
+    yum:
+      name: httpd
+      state: installed
+  - name: Start service httpd
+    service:
+      name: httpd
+      state: started
+      
+
+
+handlers
+---------------------------
+
+---
+- name: Installing httpd
+  hosts: all
+  become: true
+  tasks:
+  - name: Installing httpd
+    yum:
+      name: httpd
+      state: 
+    notify: start httpd service
+  handlers:
+  - name: start httpd service
+    service:
+      name: httpd
+      state: started
+
+
+TOMCAT Installation in test server using linux
+---------------------------------------------
+yum install java-1.8* -y
+download tomcat (wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.56/bin/apache-tomcat-9.0.56.tar.gz)
+tar -xvzf apache-tomcat-9.0.56.tar.gz
+cd apache-tomcat-9.0.56.tar.gz/bin/
+./startup.sh
+
+Tomcat Installation using Playbooks
+==================================
+---
+- name: Setup Tomcat
+  hosts: node3
+  become: true
+
+  tasks:
+  - name: Install Java in Redhat
+    yum:
+      name: java
+      state: installed
+    when: ansible_os_family == "RedHat"
+
+  - name: Install Java in Debian
+    apt:
+      name: default-jdk
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Download Tomcat
+    get_url:
+      url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.56/bin/apache-tomcat-9.0.56.tar.gz
+      dest: /opt
+
+  - name: Extract Tomcat
+    unarchive:
+      src: /opt/apache-tomcat-9.0.56.tar.gz
+      dest: /opt
+      remote_src: True
+
+  - name: Execute Permissions
+    file:
+      path: /opt/apache-tomcat-9.0.56.tar.gz
+      mode: 0777
+  - name: Start Tomcat Service
+    shell: nohup ./startup.sh
+    args:
+      chdir: /opt/apache-tomcat-9.0.56/bin/
+
+
+Ansible-Vault
+==================================
+To encrypt a playbook while creating playbook.
+ansible-vault create sample.yaml     (set up new password & confirm)
+ansible-vault view sample.yaml       (to open encrypted playbook)
+ansible-vault edit sample.yaml       (to edit encrypted playbook)
+ansible-vault rekey sample.yaml      (to change playbook password)
+ansible-vault decrypt sample.yaml    (to decrypt encrypted playbook)
+To encrypt an existing playbook
+ansible-vault encrypt sample.yaml    (set up new password & confirm)
+
+
+
+
