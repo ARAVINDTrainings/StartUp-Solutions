@@ -1,0 +1,58 @@
+1)Create VPC 10.0.0.0/16
+2)Create PublicSubnet 10.0.0.0/20
+3)Create PrivateSubnet 10.0.16.0/20
+4)Create InternetGateway and attach to VPC
+5)Create RouteTable and attach to IGW,PublicSubnet
+6)Auto assign publicIp for Public Subnet
+7)Create NatGateway in PublicSubnet
+8)Create Routetable for DBserver
+9)Attach RT to Natgateway and Privatesubnet
+10)Launch Application server in Publicsubnet (SSH ,8080 port)
+11)Launch Bastion Server in Publicsubnet (ssh)
+12)Launch Database server in PrivateSubnet (Mysql port ,ssh for bastion)
+13)SSH into Database server via Bastion Server
+14)Download MySql
+15)wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+16)yum install mysql-community-release-el7-5.noarch.rpm -y
+17)yum install mysql-server -y
+18)netstat -ntpl | grep 3306
+19)service mysqld start
+20)netstat -ntpl | grep 3306
+21)service mysqld status
+22)mysql_secure_installation (set credentials)
+23)after creating password press N for all options
+24)mysql -u root -p (to login into Database)
+25)show databases;
+26)create database jwt; 
+27)use jwt;
+27)CREATE TABLE `USER` 
+(`id` int(10) unsigned NOT NULL auto_increment,
+ `first_name` varchar(45) NOT NULL,
+ `last_name` varchar(45) NOT NULL,
+ `email` varchar(45) NOT NULL,
+ `username` varchar(45) NOT NULL,
+ `password` varchar(45) NOT NULL,
+ `regdate` date NOT NULL,
+  PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+28)SSH into Application Server
+29)yum install git -y
+30)git clone https://github.com/ARCDevopsAWS/Aws-RDS-Java.git
+31)Update database details in userregistrationpage(pvt IP ,username ,password) (example "jdbc:mysql://10.0.17.88:3306/jwt","root", "123456");
+32)Update database details in Login page(pvt IP ,username ,password)
+33)yum install java-11* -y
+34)yum install maven -y
+35)cd Aws-RDS-Java
+36)mvn package
+37)ls target/LoginWebApp.war
+38)wget https://archive.apache.org/dist/tomcat/tomcat-7/v7.0.94/bin/apache-tomcat-7.0.94.tar.gz
+39)tar xvf apache-tomcat-7.0.94.tar.gz
+40)publicIp:8080 (browse)
+41)~/apache-tomcat-7.0.94/bin/startup.sh (start tomcat service)
+42)./startup.sh start
+43)publicIp/8080 (browse)
+44)ls apache-tomcat-7.0.94/webapps/
+45)ls Aws-RDS-Java/target/
+46)cp Aws-RDS-Java/target/LoginWebApp.war apache-tomcat-7.0.94/webapps
+47)publicIp:8080/LoginWebApp
+48)grant all on jwt.* to 'root'@'10.0.0.222' identified by 'Admin@123456';
+49)flush privileges;
